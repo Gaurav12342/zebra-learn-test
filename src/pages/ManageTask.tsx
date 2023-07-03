@@ -36,11 +36,14 @@ const ManageTask: FC = () => {
   };
 
   const onSubmit = (data: any) => {
+    const newArray = [];
     const obj = {
       ...data,
       dueDate: dayjs(data?.dueDate).format("MM-DD-YYYY"),
     };
-    console.log("🚀 ~ file: ManageTask.tsx:20 ~ onSubmit ~ data:", obj);
+
+    newArray.push(obj);
+    console.log("🚀 ~ file: ManageTask.tsx:20 ~ onSubmit ~ data:", newArray);
   };
 
   return (
