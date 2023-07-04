@@ -16,12 +16,15 @@ import Paper from "@mui/material/Paper";
 import Chip from "@mui/material/Chip";
 
 import "react-datepicker/dist/react-datepicker.css";
+import ConfirmDialog from "../component/ConfirmDialog";
 
 const ManageTask: FC = () => {
   const navigate = useNavigate();
   const [startDate, setStartDate] = useState(new Date());
   const [tasks, setTasks] = useState<any>([]);
   const [isSubmit, setIsSubmit] = useState(false);
+  const [isDialog, setIsDialog] = useState(false);
+  const [rowData, setRowData] = useState<any>({});
 
   useEffect(() => {
     if (isSubmit) {
@@ -37,6 +40,7 @@ const ManageTask: FC = () => {
     reset,
     register,
     control,
+    setValue,
   } = useForm({
     defaultValues: {
       title: "",
@@ -66,6 +70,26 @@ const ManageTask: FC = () => {
     newArray.push(obj);
     setIsSubmit(true);
     setTasks([...tasks, ...newArray]);
+  };
+
+  const handleConfirmClose = () => {
+    setIsDialog(false);
+  };
+
+  const handleDeleteRecord = () => {
+    const result = JSON.parse(listsArray)?.filter((dd: any) => {
+      return dd?.id !== rowData?.id && dd;
+    });
+    localStorage.setItem("task-list", JSON.stringify(result));
+    setIsDialog(false);
+  };
+
+  const handleEdit = (obj: any) => {
+    const { title, description, priority, dueDate } = obj;
+    setValue("title", title);
+    setValue("description", description);
+    setValue("priority", priority);
+    setValue("dueDate", dueDate);
   };
 
   return (
@@ -161,17 +185,35 @@ const ManageTask: FC = () => {
                         variant="outlined"
                       />
                     </TableCell>
-                    <TableCell align="center">
-                      <Button variant="contained" sx={{ marginRight: 2 }}>
+                    <TableCell align="center" onClick={() => setRowData(row)}>
+                      <Button
+                        onClick={() => handleEdit(row)}
+                        variant="contained"
+                        sx={{ marginRight: 2 }}
+                      >
                         Edit
                       </Button>
-                      <Button variant="outlined">Delete</Button>
+                      <Button
+                        onClick={() => setIsDialog(true)}
+                        variant="outlined"
+                      >
+                        Delete
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
             </TableBody>
           </Table>
         </TableContainer>
+      </div>
+
+      <div>
+        <ConfirmDialog
+          title={"Are you sure, you want delete ?"}
+          handleClose={handleConfirmClose}
+          open={isDialog}
+          onDelete={handleDeleteRecord}
+        />
       </div>
     </div>
   );
