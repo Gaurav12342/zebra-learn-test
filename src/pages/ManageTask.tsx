@@ -1,14 +1,35 @@
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import Input from "../component/Input";
 import { useForm, Controller } from "react-hook-form";
 import { Button } from "@mui/material";
 import SelectComponent from "../component/Select";
 import DatePicker from "react-datepicker";
 import dayjs from "dayjs";
+import { useNavigate } from "react-router-dom";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import Paper from "@mui/material/Paper";
+import Chip from "@mui/material/Chip";
+
 import "react-datepicker/dist/react-datepicker.css";
 
 const ManageTask: FC = () => {
+  const navigate = useNavigate();
   const [startDate, setStartDate] = useState(new Date());
+  const [tasks, setTasks] = useState<any>([]);
+  const [isSubmit, setIsSubmit] = useState(false);
+
+  useEffect(() => {
+    if (isSubmit) {
+      localStorage.setItem("task-list", JSON.stringify(tasks));
+    }
+  }, [isSubmit, navigate, tasks]);
+
+  const listsArray: any = localStorage.getItem("task-list");
 
   const {
     handleSubmit,
@@ -39,11 +60,12 @@ const ManageTask: FC = () => {
     const newArray = [];
     const obj = {
       ...data,
+      id: Date.now(),
       dueDate: dayjs(data?.dueDate).format("MM-DD-YYYY"),
     };
-
     newArray.push(obj);
-    console.log("🚀 ~ file: ManageTask.tsx:20 ~ onSubmit ~ data:", newArray);
+    setIsSubmit(true);
+    setTasks([...tasks, ...newArray]);
   };
 
   return (
@@ -101,6 +123,56 @@ const ManageTask: FC = () => {
           </div>
         </div>
       </form>
+
+      <div>
+        <TableContainer component={Paper}>
+          <Table sx={{ minWidth: 650 }} aria-label="simple table">
+            <TableHead>
+              <TableRow>
+                <TableCell align="left">Id</TableCell>
+                <TableCell align="left">Title</TableCell>
+                <TableCell align="left">Description</TableCell>
+                <TableCell align="left">Priority</TableCell>
+                <TableCell align="left">Due date</TableCell>
+                <TableCell align="center">Action</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {JSON.parse(listsArray)?.length > 0 &&
+                JSON.parse(listsArray).map((row: any) => (
+                  <TableRow
+                    key={row.name}
+                    sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                  >
+                    <TableCell align="left">{row.id}</TableCell>
+                    <TableCell align="left">{row.title}</TableCell>
+                    <TableCell align="left">{row.description}</TableCell>
+                    <TableCell align="left">
+                      <Chip
+                        label={row.priority}
+                        color="success"
+                        variant="outlined"
+                      />
+                    </TableCell>
+                    <TableCell align="left">
+                      <Chip
+                        label={row.dueDate}
+                        color="primary"
+                        variant="outlined"
+                      />
+                    </TableCell>
+                    <TableCell align="center">
+                      <Button variant="contained" sx={{ marginRight: 2 }}>
+                        Edit
+                      </Button>
+                      <Button variant="outlined">Delete</Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </div>
     </div>
   );
 };
